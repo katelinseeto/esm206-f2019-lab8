@@ -32,5 +32,111 @@ penguin_counts <- penguins %>%
 
 penguin_counts
 ```
+### 3. Compare flipper size for female penguins across the 3 spp
+For single factor ANOVA:
 
+What is single factor?
+Species
+
+Flipper length= single variable
+
+```{r}
+penguin_f <- penguins %>% 
+  filter(sex=="FEMALE")
+
+# Faceted histogram
+ggplot(data= penguin_f, aes(x= flipper_length_mm)) +
+  geom_histogram(aes(fill = species),
+                 alpha = 0.5,
+                 show.legend = FALSE,
+                 bins = 15) +
+  facet_wrap(~species, scales = "free")
+
+#Faceted QQ Plot
+ggplot(data= penguin_f, aes(sample = flipper_length_mm)) +
+  geom_qq(aes(fill = species),
+                 alpha = 0.5,
+                 show.legend = FALSE,
+                 bins = 15) +
+  facet_wrap(~species, scales = "free")
+
+
+```
+
+###4. Find summary statistics
+Does satisfy assumptions of ANOVA? 
+Assume that variances of groups comparing are the same
+Will do hypothesis test to test for equal variances
+
+```{r}
+#Creating summary tables
+
+penguin_f_summary <- penguin_f %>% 
+  group_by(species) %>% 
+  summarize(mean_flipper_length = mean(flipper_length_mm),
+            sd_flipper_lenth= sd(flipper_length_mm),
+            sample_size = n(),
+            se_flipper_length =sd(flipper_length_mm)/ sqrt(n()),
+            var_flipper_length = var(flipper_length_mm)
+  )
+            
+```
+
+Levene's Test: (hypothesis test for equal variances)
+
+```{r}
+leveneTest(flipper_length_mm ~ species, data= penguin_f)
+```
+
+null hypothesis for Levene's test is that group variances are equal
+Based on this p val of 0.057 would I accept or reject of significance level is 0.05?
+Would retain null hyp that variances are equal
+  is close enough
+  
+Conclusion: I've done exploratory analysis and feel that a one-way ANOVA is an appropriate way to compare means between the 3 spp. 
+
+###5. Make a beeswarm plot with mean and sd overlayed on top of it
+
+The 3 Most common error bars:
+- standard deviation
+- standard error (most commonly shown, but figure caption should explain)
+- confidence interval
+
+
+```{r}
+ggplot() +
+  geom_beeswarm(data= penguin_f,
+                aes(x= species, y= flipper_length_mm),
+                size= 1,
+                alpha= 0.6,
+                color= "gray50")+
+  scale_x_discrete(labels= c("Adelie", "Chinstrap", "Gentou"))+
+  geom_point(data= penguin_f_summary, aes(x= species, y= mean_flipper_length), 
+             color= "red",
+             size= 2)+
+  geom_errorbar(data= penguin_f_summary,
+                aes(x= species,
+                    ymin= mean_flipper_length- sd_flipper_lenth, 
+                    ymax = mean_flipper_length + sd_flipper_lenth),
+                color = "red",
+                width = 0.1) +
+  theme_light()
+
+```
+**Note** Make sure if you're showing summary statistics, you actually say what you're showing
+**Figure 1.** Flipper length (mm) for three female penguin species (Adelie, Chinstrap, Gentou) observations at Palmer station LTER, Antarctica. Gray points indicate individual fipper lengths, red dots are group means, error bars indicate 1 standard deviation. Data Source
+
+
+###6. One-Way ANOVA
+```{r}
+penguin_aov <- aov(flipper_length_mm ~ species, data= penguin_f)
+summary(penguin_aov)
+
+#Note Large F value= variance across groups is very large compared to in group spread
+#Do you think is likely samples are drawn from groups with same mean? No, unlikely these samples are drawn from pop with same mean
+```
+H0 for omnibus ANOVA: Means are equal across all groups
+HA: Means are NOT equal across all groups (can mean at least 2 differ, or all differ)
+
+Conclusion: Mean flipper lengths for the 3 spp of female penguins are not equal
 
