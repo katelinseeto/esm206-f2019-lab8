@@ -1,0 +1,36 @@
+---
+title: "ESM206 Lab 8 KS"
+author: "Katelin Seeto"
+date: "11/19/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+install.packages("ggbeeswarm")
+install.packages("car")
+
+library(tidyverse)
+library(car) # Just use for the Type III ANOVA check here
+library(janitor)
+library(ggbeeswarm)
+library(kableExtra)
+```
+
+### Read in data (penguins.csv)
+```{r}
+penguins <- read_csv("penguins.csv") %>% 
+  janitor::clean_names()
+```
+###2. Find counts of penguins by sex and species
+can use count to know how many penguins are in each group
+
+```{r}
+penguin_counts <- penguins %>% 
+  count(species, sex)
+
+penguin_counts
+```
+
+
